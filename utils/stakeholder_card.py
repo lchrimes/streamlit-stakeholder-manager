@@ -41,7 +41,7 @@ def stakeholder_card(data):
         <p>Job Title: <b>{job_title}</b> </p>
         <p>Emial: <b>{email}</b> </p>
         <p>Company: <b>{company}</b> </p>
-        <p>Street Name: <b>{street_name}</b> </p>
+        <p>Address: <b>{address}</b> </p>
         <p>Phone Number: <b>{phone_number}</b> </p>
         <p>Employment Length: <b>{current_employment_length}</b> </p>
         <p>Current Start Date: <b>{employment_start_date}</b> </p>
@@ -57,7 +57,7 @@ def stakeholder_card(data):
         job_title=data['Job Title'],
         email=data['Email'],
         company=data['Company'],
-        street_name=data['Street Name'],
+        address=data['Address'],
         post_code=data['Post Code'],
         phone_number=data['Phone Number'],
         current_employment_length=data['Current Employment Length'],

@@ -13,7 +13,7 @@ avatars ={
 
 @st.cache
 def load_test_data():
-    main_data_df = pd.read_excel("static/data/Stakeholder_Dummy_Data.xlsx", sheet_name="Stakeholder Data", engine='openpyxl', index_col="Name")
+    main_data_df = pd.read_excel("static/data/Stakeholder_Dummy_Data.xlsx", sheet_name="Stakeholder Data", engine='openpyxl')
     tags_df = pd.read_excel("static/data/Stakeholder_Dummy_Data.xlsx", sheet_name="All Available Tags",engine='openpyxl')
     return main_data_df, tags_df
 
@@ -31,8 +31,8 @@ def add():
         name = st.text_input("Name", value="Mr Sam JP Blogs")
         company = st.text_input("Company", value="Fake Company")
         job_title = st.text_input("Job Title", value="Best Employee")
-        street_name = st.text_input("Address", value="Street Name")
-        post_code = st.text_input("Address", value="Post Code")
+        address = st.text_input("address", value="17, Random Address")
+        post_code = st.text_input("Post Code", value="Post Code")
         last_date_contacted  = st.date_input("Last Date Contacted")
 
     with c2:
@@ -52,7 +52,7 @@ def add():
         "Email" : email,
         "Company" : company,
         "Job Title" : job_title,
-        "Street Name" : street_name,
+        "Address" : address,
         "Post Code" : post_code,
         "Phone Number" : phone_num,
         "Current Employment Length" : current_employment_length,
@@ -68,10 +68,11 @@ def add():
 
     print(main_data_df)
     if add_stakerholder:
-        if not main_data_df.append(stakeholder, ignore_index=True):
-            st.write("Unable to Submit New Record")
-        else:
-            st.write("Record Saved")
+        main_data_df = main_data_df.append(stakeholder, ignore_index=True)
+        st.write("Record Saved")
+        print(main_data_df)
+        main_data_df.to_excel("static/data/Stakeholder_Dummy_Data.xlsx", sheet_name="Stakeholder Data", engine='openpyxl')
+        st.write("Database Updated")
 
 def edit():
     st.title("Edit Stakeholder")
