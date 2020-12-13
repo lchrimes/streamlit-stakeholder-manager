@@ -1,53 +1,43 @@
 import streamlit as st
 from utils.stakeholder_card import stakeholder_card
 import pandas as pd
+import datetime
+import numpy as np
 
-avatars ={
-    "avatar1" : "https://www.w3schools.com/w3css/img_avatar.png",
-    "avatar2" : "https://www.w3schools.com/w3css/img_avatar2.png",
-    "avatar3" : "https://www.w3schools.com/w3css/img_avatar3.png",
-    "avatar4" : "https://www.w3schools.com/w3css/img_avatar4.png",
-    "avatar5" : "https://www.w3schools.com/w3css/img_avatar5.png",
-    "avatar6" : "https://www.w3schools.com/w3css/img_avatar6.png"
-}
-
-@st.cache
 def load_test_data():
-    main_data_df = pd.read_excel("static/data/Stakeholder_Dummy_Data.xlsx", sheet_name="Stakeholder Data", engine='openpyxl')
-    tags_df = pd.read_excel("static/data/Stakeholder_Dummy_Data.xlsx", sheet_name="All Available Tags",engine='openpyxl')
+    main_data_df = pd.read_csv("static/data/Stakeholder_Data.csv")
+    tags_df = pd.read_csv("static/data/Stakeholder_Tags.csv")
     return main_data_df, tags_df
 
-def add():
+def add(main_data_df, tags, stakerholder_lookup):
 
     st.title("Add Stakeholder")
     
     c1, c2 = st.beta_columns((3,3))
-    main_data_df , tags_df = load_test_data()
-    tags = tags_df['Tags'].values
 
     with c1:
         
-        avatar = st.selectbox("Avatar", list(avatars.keys()), index=0)
-        name = st.text_input("Name", value="Mr Sam JP Blogs")
-        company = st.text_input("Company", value="Fake Company")
-        job_title = st.text_input("Job Title", value="Best Employee")
-        address = st.text_input("address", value="17, Random Address")
-        post_code = st.text_input("Post Code", value="Post Code")
+        avatar = st.selectbox("Avatar", ["avatar"+str(av) for av in range(1,7)], index=0)
+        name = st.text_input("Name", value="Frodeo Baggends")
+        company = st.text_input("Company", value="Mordeor")
+        job_title = st.text_input("Job Title", value="The Shire")
+        address = st.text_input("address", value="17, The Shire Road")
+        post_code = st.text_input("Post Code", value="SH17 1MOR")
         last_date_contacted  = st.date_input("Last Date Contacted")
 
     with c2:
         
-        email = st.text_input("Email", value="Email.com")
+        email = st.text_input("Email", value="hobbit@shire.com")
         phone_num = st.text_input("Phone Number", value="+44 123456789")
         current_employment_length = st.number_input("Employment Length", value=5)
         employment_start_date = st.date_input("Employment Start Date")
-        URLs = st.text_input("Comma Separated Weblinks", value="blogs_web_profile.com")
+        URLs = st.text_input("Comma Separated Weblinks", value="bagends_primary.com")
         tags = st.multiselect("Comma Separated Tags", options=tags, default=None)
 
 
     # New Stakeholder Data    
     stakeholder = {
-        "Avatar Number" : avatars[avatar],
+        "Avatar Number" : avatar,
         "Name" : name,
         "Email" : email,
         "Company" : company,
@@ -59,30 +49,122 @@ def add():
         "Employment Start Date" : employment_start_date,
         "Date Last Contacted" : last_date_contacted,
         "URLs" : URLs,
-        "Tags" : tags
+        "Tags" : ",".join(tags)
     }
     
-    add_stakerholder = st.button("Add Stakeholder Record")
+    add_stakerholder_button = st.button("Add Stakeholder Record")
 
+    if add_stakerholder_button:
+        # Check if Name Exists
+        if (main_data_df['Name'] == name).any():
+            st.markdown("""<div class="alert alert-warning" role="alert">
+            Stakeholder Already Exists Please Edit Instead
+            </div>""", unsafe_allow_html=True)
+        # Adding to database
+        else:
+            main_data_df = main_data_df.append(stakeholder, ignore_index=True)
+            main_data_df.to_csv("static/data/Stakeholder_Data.csv", index=False)
+            # Save successful statement
+            st.markdown("""<div class="alert alert-success" role="alert">
+                Stakeholder Added
+                </div>""", unsafe_allow_html=True)
+
+    # Display stakeholder card
     st.markdown(stakeholder_card(stakeholder), unsafe_allow_html=True)
 
-    print(main_data_df)
-    if add_stakerholder:
-        main_data_df = main_data_df.append(stakeholder, ignore_index=True)
-        st.write("Record Saved")
-        print(main_data_df)
-        main_data_df.to_excel("static/data/Stakeholder_Dummy_Data.xlsx", sheet_name="Stakeholder Data", engine='openpyxl')
-        st.write("Database Updated")
-
-def edit():
+def edit(main_data_df, tags, stakerholder_lookup):
     st.title("Edit Stakeholder")
-    pass
 
-def add_tag():
+    edit_stakeholder = st.selectbox("Stakeholder", main_data_df['Name'].values, index=0)
+    loc = int(stakerholder_lookup[edit_stakeholder])
+    stakeholder = main_data_df.iloc[loc].to_dict()
+    st.markdown(stakeholder_card(stakeholder), unsafe_allow_html=True)
+    
+    st.title("Editor")
+    c1, c2 = st.beta_columns((3,3))
+
+    with c1:
+        
+        avatar = st.selectbox("Avatar", ["avatar"+str(av) for av in range(1,7)], index=int(stakeholder['Avatar Number'][-1])-1)
+        name = st.text_input("Name", value=stakeholder['Name'])
+        company = st.text_input("Company", value=stakeholder['Company'])
+        job_title = st.text_input("Job Title", value=stakeholder['Job Title'])
+        address = st.text_input("address", value=stakeholder['Address'])
+        post_code = st.text_input("Post Code", value=stakeholder["Post Code"])
+        stakehodler_last_date = datetime.datetime.strptime(stakeholder['Date Last Contacted'], '%Y-%m-%d')
+        last_date_contacted  = st.date_input("Last Date Contacted", value=stakehodler_last_date)
+
+    with c2:
+        
+        email = st.text_input("Email", value=stakeholder['Email'])
+        phone_num = st.text_input("Phone Number", value=stakeholder['Phone Number'])
+        current_employment_length = st.number_input("Employment Length", value=int(stakeholder['Current Employment Length']))
+        stakehodler_start_date = datetime.datetime.strptime(stakeholder['Employment Start Date'], '%Y-%m-%d')
+        employment_start_date = st.date_input("Employment Start Date", stakehodler_start_date)
+        URLs = st.text_input("Comma Separated Weblinks", value=stakeholder['URLs'])
+        default_tags = list(stakeholder['Tags'].split(","))
+        tags = st.multiselect("Comma Separated Tags", options=list(tags), default=default_tags)
+
+    stakeholder = {
+    "Name" : name,
+    "Email" : email,
+    "Company" : company,
+    "Job Title" : job_title,
+    "Phone Number" : phone_num,
+    "Address" : address,
+    "Post Code" : post_code,
+    "Employment Start Date" : employment_start_date,
+    "Current Employment Length" : current_employment_length,
+    "Avatar Number" : avatar,
+    "Date Last Contacted" : last_date_contacted,
+    "URLs" : URLs,
+    "Tags" : ",".join(tags)
+    }
+
+    update_button = st.button("Update Stakeholder")
+
+    if update_button:
+
+        main_data_df.to_csv("static/data/Stakeholder_Data.csv", index=False)
+        # Save successful statement
+        st.markdown("""<div class="alert alert-success" role="alert">
+            Stakeholder Updated
+            </div>""", unsafe_allow_html=True)
+
+
+
+def add_tag(main_data_df, tags, stakerholder_lookup):
     st.title("Tag Management")
-    pass
+    list_tags = list(tags)
+
+    new_tag = st.text_input("Please Enter New Tag e.g. WearableInjectables or SpaceStation")
+    update_tag_button = st.button("Add Tag")
+    if update_tag_button:
+        if new_tag not in list_tags:
+            tags_df = pd.DataFrame({"Tags" : list_tags + [new_tag]})
+            tags_df.to_csv("static/data/Stakeholder_Tags.csv", index=False)
+            st.markdown("""<div class="alert alert-success" role="alert">
+                Tag Successfully Added
+                </div>""", unsafe_allow_html=True)
+        else:
+            st.markdown("""<div class="alert alert-success" role="alert">
+                Tag Already Exists
+                </div>""", unsafe_allow_html=True)
+
+    tag_line = """
+    The current tag list:
+    """
+    for tag in list_tags:
+        tag_line += f"<li> {tag} </li>"
+    st.markdown(tag_line, unsafe_allow_html=True)
+
+    
 
 def database_main():
+
+    main_data_df , tags_df = load_test_data()
+    tags = tags_df['Tags'].values
+    stakerholder_lookup = dict((v,k) for k,v in main_data_df[["Name"]].to_dict()['Name'].items())
 
     PAGES = {
         "Add Stakeholder" : add,
@@ -100,5 +182,5 @@ def database_main():
         )
     
     page = PAGES[page_selection]
-    page()
+    page(main_data_df, tags, stakerholder_lookup)
     

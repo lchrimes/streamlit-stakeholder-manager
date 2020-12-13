@@ -5,7 +5,7 @@ from pages.stakeholder_search import search
 from pages.stakeholder_edit import database_main
 
 # Changing title page and the favicon - set page call only be called once per app and only at the start
-st.set_page_config(page_title='Climate Awareness')
+st.set_page_config(page_title='Stakeholder Management')
 
 # Loading carbon data
 @st.cache()
