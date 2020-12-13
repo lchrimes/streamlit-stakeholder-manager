@@ -2,16 +2,10 @@ import streamlit as st
 import pandas as pd
 from utils.base64_handler import file_to_base64
 from pages.stakeholder_search import search
-from pages.stakeholder_edit import database_main
+from pages.stakeholder_editor import database_admin
 
 # Changing title page and the favicon - set page call only be called once per app and only at the start
 st.set_page_config(page_title='Stakeholder Management')
-
-# Loading carbon data
-@st.cache()
-def load_carbon_data():
-  carbonSequesteredDf = pd.read_csv("static/data/TheGreatCarbonSinkInfo-Carbon-Rate.csv")
-  return carbonSequesteredDf
 
 # Adding sytle sheet
 def remote_css(url):
@@ -41,7 +35,7 @@ st.image("static/images/app_logo.png", use_column_width=True)
 #Pages
 PAGES = {
   "Stakeholder Search" : search,
-  'Stakeholders Database Management' : database_main,
+  'Stakeholders Database Management' : database_admin,
 }
 
 # Slide bar

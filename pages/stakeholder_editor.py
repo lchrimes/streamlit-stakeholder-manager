@@ -4,15 +4,23 @@ import pandas as pd
 import datetime
 import numpy as np
 
+#TO-DO : extract repeated code into seperate functions
+
 def load_test_data():
+    # Just loading the data
+
     main_data_df = pd.read_csv("static/data/Stakeholder_Data.csv")
     tags_df = pd.read_csv("static/data/Stakeholder_Tags.csv")
     return main_data_df, tags_df
 
 def add(main_data_df, tags, stakerholder_lookup):
+    """
+    Adding a new stakeholder to the database
+    """
 
     st.title("Add Stakeholder")
     
+    # Creating two columns for user inputs
     c1, c2 = st.beta_columns((3,3))
 
     with c1:
@@ -73,15 +81,25 @@ def add(main_data_df, tags, stakerholder_lookup):
     st.markdown(stakeholder_card(stakeholder), unsafe_allow_html=True)
 
 def edit(main_data_df, tags, stakerholder_lookup):
+    """
+    Editing a current stakeholder
+    """
+
     st.title("Edit Stakeholder")
 
+    # Stakeholder selection and data extraction
     edit_stakeholder = st.selectbox("Stakeholder", main_data_df['Name'].values, index=0)
     loc = int(stakerholder_lookup[edit_stakeholder])
     stakeholder = main_data_df.iloc[loc].to_dict()
+
+    # Displays a stakeholder
     st.markdown(stakeholder_card(stakeholder), unsafe_allow_html=True)
     
     st.title("Editor")
+
+    # Creating two columns for user inputs
     c1, c2 = st.beta_columns((3,3))
+
 
     with c1:
         
@@ -134,44 +152,64 @@ def edit(main_data_df, tags, stakerholder_lookup):
 
 
 def add_tag(main_data_df, tags, stakerholder_lookup):
+    """
+    Managing the current tags
+    """
+
     st.title("Tag Management")
+
+    # Generating a list of tags, required for the multi-select function
     list_tags = list(tags)
 
     new_tag = st.text_input("Please Enter New Tag e.g. WearableInjectables or SpaceStation")
+
     update_tag_button = st.button("Add Tag")
+
     if update_tag_button:
+        # Checking if the tags is already present
         if new_tag not in list_tags:
             tags_df = pd.DataFrame({"Tags" : list_tags + [new_tag]})
             tags_df.to_csv("static/data/Stakeholder_Tags.csv", index=False)
             st.markdown("""<div class="alert alert-success" role="alert">
                 Tag Successfully Added
                 </div>""", unsafe_allow_html=True)
+    
         else:
             st.markdown("""<div class="alert alert-success" role="alert">
-                Tag Already Exists
+                Tag already exists, not added to database
                 </div>""", unsafe_allow_html=True)
 
     tag_line = """
     The current tag list:
     """
+
+    # Displaying the current available tags
     for tag in list_tags:
         tag_line += f"<li> {tag} </li>"
     st.markdown(tag_line, unsafe_allow_html=True)
 
     
 
-def database_main():
+def database_admin():
+    """
+    Main function for the database maintance page
+    """
 
+    # Loading the data
     main_data_df , tags_df = load_test_data()
     tags = tags_df['Tags'].values
+
+    # Generating a stakerholder lookup dict... Name : Index
     stakerholder_lookup = dict((v,k) for k,v in main_data_df[["Name"]].to_dict()['Name'].items())
 
+    # Available pages in Stakeholders Database Management mode
     PAGES = {
         "Add Stakeholder" : add,
         "Edit Stakeholder" : edit,
         "Tag Management" : add_tag
     }
 
+    # Update sidebar for the database maintance page
     page_selection = st.sidebar.radio(
         "Edit Mode", 
         [
@@ -181,6 +219,8 @@ def database_main():
         ]
         )
     
+
+    # Load the page based on the selected option
     page = PAGES[page_selection]
     page(main_data_df, tags, stakerholder_lookup)
     
