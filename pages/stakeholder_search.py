@@ -3,7 +3,12 @@ import pandas as pd
 from utils.stakeholder_card import stakeholder_card
 import datetime
 
-
+def data_refresh():
+    df = pd.read_csv("static/data/Stakeholder_rawData.csv")
+    df.to_csv("static/data/Stakeholder_Data.csv")
+    st.markdown("""<div class="alert alert-success" role="alert">
+    Data Successfully Refreshed
+    </div>""", unsafe_allow_html=True)
 
 def load__stakeholder_data(filename):
 
@@ -54,8 +59,22 @@ def display_card(name, df, lookup):
 
 
 def search():
-    st.title("Stakeholder Search")
+
+    st.write(
+    """
+    <div class="main">
+    <b>Please be aware</b>
+    This app is a demo intended to help you keep track of various contacts for use in projects, by tagging contacts by their expertise or how approachable they are. It includes an example set of data that can be edited and saved, and lets you easily track when each person was last contacted.
+    As this is a public demo, the example data can be edited by anyone. It is highly recommended that the app is "reset" using the below button prior to using it, to remove other user's changes to the saved data.
+    </div>
+    """, unsafe_allow_html=True)
     
+    refresh_app_data = st.button("Data Refresh")
+    if refresh_app_data:
+        data_refresh()
+
+    st.title("Stakeholder Search")
+
     stakeholder_database, stakerholder_lookup = load__stakeholder_data("static/data/Stakeholder_Data.csv")
  
     tag_database = load__tags("static/data/Stakeholder_Tags.csv")
