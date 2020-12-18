@@ -3,6 +3,7 @@ from utils.stakeholder_card import stakeholder_card
 import pandas as pd
 import datetime
 import numpy as np
+import math
 
 #TO-DO : extract repeated code into seperate functions
 
@@ -13,6 +14,11 @@ def load_test_data():
     tags_df = pd.read_csv("static/data/Stakeholder_Tags.csv")
     return main_data_df, tags_df
 
+def edit_row(stakeholder, df, loc):
+    df = df.drop(loc,axis=0)
+    df = df.append(stakeholder, ignore_index=True)
+    df.to_csv("static/data/Stakeholder_Data.csv", index=False)
+    
 def add(main_data_df, tags, stakerholder_lookup):
     """
     Adding a new stakeholder to the database
@@ -88,7 +94,7 @@ def edit(main_data_df, tags, stakerholder_lookup):
     st.title("Edit Stakeholder")
 
     # Stakeholder selection and data extraction
-    edit_stakeholder = st.selectbox("Stakeholder", main_data_df['Name'].values, index=0)
+    edit_stakeholder = st.selectbox("Stakeholder", main_data_df['Name'].values, index=5)
     loc = int(stakerholder_lookup[edit_stakeholder])
     stakeholder = main_data_df.iloc[loc].to_dict()
 
@@ -99,7 +105,6 @@ def edit(main_data_df, tags, stakerholder_lookup):
 
     # Creating two columns for user inputs
     c1, c2 = st.beta_columns((3,3))
-
 
     with c1:
         
@@ -117,33 +122,39 @@ def edit(main_data_df, tags, stakerholder_lookup):
         email = st.text_input("Email", value=stakeholder['Email'])
         phone_num = st.text_input("Phone Number", value=stakeholder['Phone Number'])
         current_employment_length = st.number_input("Employment Length", value=int(stakeholder['Current Employment Length']))
+        #Generating Datatime object
         stakehodler_start_date = datetime.datetime.strptime(stakeholder['Employment Start Date'], '%Y-%m-%d')
         employment_start_date = st.date_input("Employment Start Date", stakehodler_start_date)
+
         URLs = st.text_input("Comma Separated Weblinks", value=stakeholder['URLs'])
-        default_tags = list(stakeholder['Tags'].split(","))
+        if type(stakeholder['Tags']) !=  str:
+            default_tags = None
+        else:
+            default_tags = list(stakeholder['Tags'].split(","))
         tags = st.multiselect("Comma Separated Tags", options=list(tags), default=default_tags)
 
     stakeholder = {
-    "Name" : name,
-    "Email" : email,
-    "Company" : company,
-    "Job Title" : job_title,
-    "Phone Number" : phone_num,
-    "Address" : address,
-    "Post Code" : post_code,
-    "Employment Start Date" : employment_start_date,
-    "Current Employment Length" : current_employment_length,
-    "Avatar Number" : avatar,
-    "Date Last Contacted" : last_date_contacted,
-    "URLs" : URLs,
-    "Tags" : ",".join(tags)
-    }
+        "Name" : name,
+        "Email" : email,
+        "Company" : company,
+        "Job Title" : job_title,
+        "Phone Number" : phone_num,
+        "Address" : address,
+        "Post Code" : post_code,
+        "Employment Start Date" : employment_start_date,
+        "Current Employment Length" : current_employment_length,
+        "Avatar Number" : avatar,
+        "Date Last Contacted" : last_date_contacted,
+        "URLs" : URLs,
+        "Tags" : ",".join(tags)
+        }
 
     update_button = st.button("Update Stakeholder")
 
     if update_button:
+        
+        edit_row(stakeholder, main_data_df, loc)
 
-        main_data_df.to_csv("static/data/Stakeholder_Data.csv", index=False)
         # Save successful statement
         st.markdown("""<div class="alert alert-success" role="alert">
             Stakeholder Updated
@@ -151,7 +162,7 @@ def edit(main_data_df, tags, stakerholder_lookup):
 
 
 
-def add_tag(main_data_df, tags, stakerholder_lookup):
+def edit_tags(main_data_df, tags, stakerholder_lookup):
     """
     Managing the current tags
     """
@@ -179,16 +190,20 @@ def add_tag(main_data_df, tags, stakerholder_lookup):
                 Tag already exists, not added to database
                 </div>""", unsafe_allow_html=True)
 
-    tag_line = """
-    The current tag list:
-    """
+    # removing tags
+    remove_tags = st.multiselect("Tags to Remove", options=list_tags)
 
-    # Displaying the current available tags
-    for tag in list_tags:
-        tag_line += f"<li> {tag} </li>"
-    st.markdown(tag_line, unsafe_allow_html=True)
+    remove_tags_button = st.button("Remove Tag(s)")
 
-    
+    if remove_tags_button:
+        for tag in remove_tags:
+            list_tags.remove(tag)
+        # Checking if the tags is already present
+        tags_df = pd.DataFrame({"Tags" : list_tags})
+        tags_df.to_csv("static/data/Stakeholder_Tags.csv", index=False)
+        st.markdown("""<div class="alert alert-success" role="alert">
+            Tag(s) Successfully Removed
+            </div>""", unsafe_allow_html=True)
 
 def database_admin():
     """
@@ -206,7 +221,7 @@ def database_admin():
     PAGES = {
         "Add Stakeholder" : add,
         "Edit Stakeholder" : edit,
-        "Tag Management" : add_tag
+        "Tag Management" : edit_tags
     }
 
     # Update sidebar for the database maintance page

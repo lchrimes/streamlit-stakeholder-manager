@@ -55,6 +55,7 @@ def stakeholder_card(data):
         <p>Phone Number: <b>{phone_number}</b> </p>
         <p>Employment Length: <b>{current_employment_length}</b> </p>
         <p>Current Start Date: <b>{employment_start_date}</b> </p>
+        <p>Last Contacted: <b>{last_contacted}</b> </p>
         <p>URLs: <b>{URLs}</b> </p>
         <p>Tags: <b>{tags}</b> </p>
     </div>
@@ -72,6 +73,7 @@ def stakeholder_card(data):
         phone_number=data['Phone Number'],
         current_employment_length=data['Current Employment Length'],
         employment_start_date=data['Employment Start Date'],
+        last_contacted=data['Date Last Contacted'],
         URLs=data['URLs'],
         tags=data['Tags']
         )
