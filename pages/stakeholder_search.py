@@ -4,8 +4,10 @@ from utils.stakeholder_card import stakeholder_card
 import datetime
 
 def data_refresh():
-    df = pd.read_csv("static/data/Stakeholder_rawData.csv")
-    df.to_csv("static/data/Stakeholder_Data.csv")
+    df_stakeholder = pd.read_csv("static/data/Stakeholder_rawData.csv")
+    df_stakeholder.to_csv("static/data/Stakeholder_Data.csv")
+    df_tags = pd.read_csv("static/data/Stakeholder_rawTags.csv")
+    df_tags.to_csv("static/data/Stakeholder_Tags.csv")
     st.markdown("""<div class="alert alert-success" role="alert">
     Data Successfully Refreshed
     </div>""", unsafe_allow_html=True)
