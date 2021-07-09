@@ -1,3 +1,5 @@
+![alt text](https://github.com/databounduk/streamlit-climate-change/blob/main/static/images/app_logo.png?raw=true)
+
 # The Stakeholder-tracker Streamlit App
 
 This is a streamlit application display the possibilities of streamlit within a speed coding session 2 hrs
